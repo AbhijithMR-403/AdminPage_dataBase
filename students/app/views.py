@@ -152,13 +152,55 @@ def admin_edit_submit(request,row_id):
         return redirect('admin_home')
         
 def admin_search(request):
-    if request.method == 'POST':  # Check if the request is a POST request
-        username = request.POST.get('search_admin', '')  # Get the username from the POST data
+    if request.method == 'POST':
+        username = request.POST.get('search_admin', '')
 
-        if username:  # Check if username is not empty
-            person = User.objects.filter(username__icontains=username)  # Query for users matching the username
-            pp = {'p': person}  # Create a dictionary to pass the query result to the template
-            return render(request, 'admin_paritition/adminpage.html', pp)  # Render the template with the query result
+        if username: 
+            person = User.objects.filter(username__icontains=username)
+            pp = {'p': person} 
+            return render(request, 'admin_paritition/adminpage.html', pp) 
 
-    # If username is empty or the request is not a POST request, redirect to "admin_home"
     return redirect("admin_home")
+
+def create_user_admin(request):
+    if request.method == 'POST':
+        name=request.POST['name']
+        email=request.POST['email']
+        password=request.POST['password']
+        # ^ Checking for validation of those things type in form
+        if not name and not email and not password:
+            messages.warning(request,'Type something to register')
+            return redirect('create_user_admin')
+
+        if not name:
+            messages.warning(request,'Type your name')
+            return redirect('create_user_admin')
+        if not email or '@' not in email:
+            messages.warning(request,'Invalid email')
+            return redirect('create_user_admin')
+        if not password or len(password)<4:
+            messages.warning(request,'Type more character\' for password')
+            return redirect('create_user_admin')
+        
+        # *Storing to database 
+        try:
+            if User.objects.get(username=name):
+                messages.warning(request,'This name already exist')
+                return redirect('create_user_admin')
+        except:
+            pass
+        try:
+            if User.objects.get(email=email):
+                messages.warning(request,'This email is already taken')
+                return redirect('create_user_admin')
+        except:
+            pass
+        
+        myUser=User.objects.create_user(name,email,password)
+        myUser.save()
+        return redirect('admin_home')
+
+
+
+
+    return render(request,'admin_paritition/createuser.html')
