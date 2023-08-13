@@ -31,7 +31,7 @@
 					<div class="card fat">
 						<div class="card-body">
 							<h4 class="card-title">Admin Login</h4>
-							<form method="POST" class="my-login-validation" action="/" novalidate="">{% csrf_token %}
+							<form method="POST" class="my-login-validation" action="/adminlog/" novalidate="">{% csrf_token %}
 								<div class="form-group">
 									<label for="email">Username</label>
 									<input id="email" type="name" class="form-control" name="name" value="" required autofocus>
@@ -65,7 +65,7 @@
 									</button>
 								</div>
 								<div class="mt-4 text-center">
-									Don't have an account? <a href="/sign_up">Create One</a>
+									Don't have an account? <a href="">Create One</a>
 								</div>
 							</form>
 						</div>
