@@ -104,11 +104,12 @@ def admin_login_page(request):
         name=request.POST['name']
         password=request.POST['password']
         user = authenticate(username=name,password=password)
-        print(user)
+        print(user,'\n\n\n\n')
         if user is not None and user.is_superuser:
             login(request,user)
             return redirect('admin_home')
         else:
+            messages.warning(request,'Detail\'s are not correct')
             return redirect('admin_log_in_page')
     return render(request,'admin_paritition/login.html')
 
@@ -122,16 +123,17 @@ def admin_home_page(request):
     return redirect('admin_log_in_page')
 
 def delete_row(request,row_id):
-    messages.success(request,'This message is deleted')
+    details = get_object_or_404(User, id=row_id)
+    details.delete()
+    messages.warning(request,'Data is deleted successfully')
     return redirect('admin_home')
 
 def admin_edit(request,row_id):
-
     details = get_object_or_404(User, id=row_id)
     return render(request,'admin_paritition/edit.html',{'details':details})
 
 def admin_edit_submit(request,row_id):
-    if request.method == 'POST':
+    # if request.method == 'POST':
         user = User.objects.get(id=row_id)
         name=request.POST['name']
         email=request.POST['email']
@@ -140,6 +142,7 @@ def admin_edit_submit(request,row_id):
         user.email=email
         if password:
             user.password=password
+        messages.success(request,'Data is edited successfully')
         user.save()
         return redirect('admin_home')
         
