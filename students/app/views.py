@@ -89,6 +89,9 @@ def user_price_page(request):
 
     
 def user_log_out(request):
+    if request.user.is_superuser:
+        logout(request)
+        return redirect('admin_log_in_page')
     logout(request)
     return redirect('/')
 
@@ -122,6 +125,8 @@ def admin_home_page(request):
     return redirect('admin_log_in_page')
 
 def delete_row(request,row_id):
+    details = get_object_or_404(User, id=row_id)
+    details.delete()
     messages.success(request,'This message is deleted')
     return redirect('admin_home')
 
