@@ -5,6 +5,7 @@ from django.contrib.auth import login,logout,authenticate
 from django.contrib.auth.hashers import make_password
 from django.views.decorators.cache import cache_control
 
+
 # Create your views here.
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def user_log_in_page(request):
@@ -40,11 +41,11 @@ def user_sign_up_page(request):
         if not name:
             messages.warning(request,'Type your name')
             return redirect('user_sign_up_page')
-        if not email:
-            messages.warning(request,'Type your email')
+        if not email or '@' not in email:
+            messages.warning(request,'Invalid email')
             return redirect('user_sign_up_page')
-        if not password:
-            messages.warning(request,'Type your password')
+        if not password or len(password)<4:
+            messages.warning(request,'Type more character\' for password')
             return redirect('user_sign_up_page')
         
         # *Storing to database 
@@ -89,11 +90,12 @@ def user_price_page(request):
 
     
 def user_log_out(request):
-    if request.user.is_superuser:
-        logout(request)
-        return redirect('admin_log_in_page')
     logout(request)
     return redirect('/')
+
+def admin_log_out(request):
+    logout(request)
+    return redirect('admin_log_in_page')
 
 
 # ^Admin partition side
@@ -107,19 +109,20 @@ def admin_login_page(request):
         name=request.POST['name']
         password=request.POST['password']
         user = authenticate(username=name,password=password)
-        print(user)
+        print(user,'\n\n\n\n')
         if user is not None and user.is_superuser:
             login(request,user)
             return redirect('admin_home')
         else:
+            messages.warning(request,'Detail\'s are not correct')
             return redirect('admin_log_in_page')
     return render(request,'admin_paritition/login.html')
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def admin_home_page(request):
     if request.user.is_authenticated and request.user.is_superuser:
-        person=User.objects.all()
-        print(person)
+        person=User.objects.all().exclude(is_superuser=True).order_by('id')
+        
         pp={'p':person,'k':'ajith is here'}
         return render(request,'admin_paritition/adminpage.html',pp)
     return redirect('admin_log_in_page')
@@ -127,16 +130,15 @@ def admin_home_page(request):
 def delete_row(request,row_id):
     details = get_object_or_404(User, id=row_id)
     details.delete()
-    messages.success(request,'This message is deleted')
+    messages.warning(request,'Data is deleted successfully')
     return redirect('admin_home')
 
 def admin_edit(request,row_id):
-
     details = get_object_or_404(User, id=row_id)
     return render(request,'admin_paritition/edit.html',{'details':details})
 
 def admin_edit_submit(request,row_id):
-    if request.method == 'POST':
+    # if request.method == 'POST':
         user = User.objects.get(id=row_id)
         name=request.POST['name']
         email=request.POST['email']
@@ -145,6 +147,18 @@ def admin_edit_submit(request,row_id):
         user.email=email
         if password:
             user.password=password
+        messages.success(request,'Data is edited successfully')
         user.save()
         return redirect('admin_home')
         
+def admin_search(request):
+    if request.method == 'POST':  # Check if the request is a POST request
+        username = request.POST.get('search_admin', '')  # Get the username from the POST data
+
+        if username:  # Check if username is not empty
+            person = User.objects.filter(username__icontains=username)  # Query for users matching the username
+            pp = {'p': person}  # Create a dictionary to pass the query result to the template
+            return render(request, 'admin_paritition/adminpage.html', pp)  # Render the template with the query result
+
+    # If username is empty or the request is not a POST request, redirect to "admin_home"
+    return redirect("admin_home")
