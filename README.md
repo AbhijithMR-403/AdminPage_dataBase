@@ -1,5 +1,4 @@
 # AdminPage_dataBase
-The user detail will be show in admin home page
 Hello,
 Thank you for visiting my git hub .
 if you want to run this code:
